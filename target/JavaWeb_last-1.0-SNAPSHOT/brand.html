@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>companyWebsite-demo</title>
+    <style>
+        .el-table .warning-row {
+            background: oldlace;
+        }
+
+        .el-table .success-row {
+            background: #f0f9eb;
+        }
+    </style>
+
+</head>
+<body>
+<div id="app">
+
+    <!--Search Form-->
+    <el-form :inline="true" :model="brand" class="demo-form-inline">
+        <el-form-item label="Status Now">
+            <el-select v-model="brand.status" placeholder="Status Now">
+                <el-option label="Enable" value="1"></el-option>
+                <el-option label="Disable" value="0"></el-option>
+            </el-select>
+        </el-form-item>
+
+        <el-form-item label="Company">
+            <el-input v-model="brand.companyName" placeholder="Company"></el-input>
+        </el-form-item>
+
+        <el-form-item label="Brand">
+            <el-input v-model="brand.brandName" placeholder="Brand"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">Query</el-button>
+        </el-form-item>
+    </el-form>
+
+    <el-row>
+        <el-button type="danger" @click="deleteByIds" plain>Batch Delete</el-button>
+        <el-button type="primary" @click="dialogVisible = true" plain>Add New</el-button>
+    </el-row>
+    <!--add dialog form-->
+    <el-dialog title="Add Brand" :visible.sync="dialogVisible" width="30%">
+
+        <el-form ref="form" :model="brand" label-width="120px">
+            <el-form-item label="Brand">
+                <el-input v-model="brand.brandName"></el-input>
+            </el-form-item>
+            <el-form-item label="Company">
+                <el-input v-model="brand.companyName"></el-input>
+            </el-form-item>
+            <el-form-item label="Ordered">
+                <el-input v-model="brand.ordered"></el-input>
+            </el-form-item>
+            <el-form-item label="Remark">
+                <el-input type="textarea" v-model="brand.description"></el-input>
+            </el-form-item>
+            <el-form-item label="Status">
+                <el-switch v-model="brand.status" active-value="1" inactive-value="0"></el-switch>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="addBrand">Create</el-button>
+                <el-button @click="dialogVisible = false">Cancel</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
+
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                :row-class-name="tableRowClassName"
+                @selection-change="handleSelectionChange">
+            <el-table-column
+                    type="selection"
+                    align="center"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    type="index"
+                    width="50">
+            </el-table-column>
+            <el-table-column
+                    prop="brandName"
+                    label="Brand"
+                    align="center"
+                    >
+            </el-table-column>
+            <el-table-column
+                    prop="companyName"
+                    label="Company"
+                    align="center"
+                    >
+            </el-table-column>
+            <el-table-column
+                    prop="ordered"
+                    label="Ordered"
+                    align="center"
+                    >
+            </el-table-column>
+            <el-table-column
+                    prop="statusStr"
+                    label="Status"
+                    align="center">
+            </el-table-column>
+
+            <el-table-column
+
+                    label="Operation"
+                    align="center">
+
+                <template slot-scope="scope">
+                    <el-row>
+                        <el-button type="primary" @click="startEdit(scope.row)">Edit</el-button>
+                        <el-button type="danger" @click="deleteById(scope.row)">Delete</el-button>
+                        <el-button type="primary" @click="getPaths(scope.row)">Model</el-button>
+                    </el-row>
+                </template>
+
+            </el-table-column>
+        </el-table>
+    </template>
+    <!-- edit brand dialog ,this position and surrounded by template same slot-scope with edit button-->
+    <el-dialog title="Edit Brand" :visible.sync="editDialogVisible" width="30%">
+        <template slot-scope="scope">
+        <el-form ref="form" :model="brandEdition" label-width="120px">
+            <el-form-item label="Brand">
+                <el-input v-model="brandEdition.brandName"></el-input>
+            </el-form-item>
+            <el-form-item label="Company">
+                <el-input v-model="brandEdition.companyName"></el-input>
+            </el-form-item>
+            <el-form-item label="Ordered">
+                <el-input v-model="brandEdition.ordered"></el-input>
+            </el-form-item>
+            <el-form-item label="Remark">
+                <el-input type="textarea" v-model="brandEdition.description"></el-input>
+            </el-form-item>
+            <el-form-item label="Status">
+                <el-switch v-model="brandEdition.status" :active-value="1" :inactive-value="0"></el-switch>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button type="primary" @click="confirmEdit" >Confirm</el-button>
+                <el-button @click="cancelEdit">Cancel</el-button>
+            </el-form-item>
+        </el-form>
+        </template>
+    </el-dialog>
+
+    <!--pagination-->
+    <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-sizes="[5,10,15,30,50]"
+            :page-size="10"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalCount">
+    </el-pagination>
+
+</div>
+
+<script>
+    let account = sessionStorage.getItem("account");
+</script>
+<script src="js/Vue.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+<script src="js/axios-0.18.0.js"></script>
+
+<script>
+    new Vue({
+        el: "#app",
+        mounted(){
+            this.queryAll()
+        },
+        methods: {
+            /**
+             *for every time we need to reload the page and see all brands info
+             */
+
+
+            queryAll() {
+                // var _this = this
+                // axios({
+                //     method: "get",
+                //     url: "http://localhost:8080/JavaWeb_last/brand/queryALl"
+                // }).then(function (resp) {
+                //     _this.tableData = resp.data;
+                //
+                // })
+
+                /*from select All change to select all in one page*/
+/*                var _this = this
+                axios({
+                    /!*
+                    * for condition query, here use both data:{} and url? to transit params
+                    * and, all query through selectByPageWithCondition method
+                    * and, "this" in then(), need use "_this", but just in axios, just "this" will be OK
+                    *!/
+                    method: "post",
+                    url: "http://localhost:8080/JavaWeb_last/brand/selectByPageWithCondition?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
+                    data:this.brand
+                }).then(function (resp) {
+                    //data for table
+                    _this.tableData = resp.data.rowsInPage;//{ rowsInPage : [], totalCount : int }
+                    _this.totalCount = resp.data.totalCount;
+                })*/
+
+                axios({
+                    /*
+                    * for condition query, here use both data:{} and url? to transit params
+                    * and, all query through selectByPageWithCondition method
+                    * and, "this" in then(), need use "_this", but just in axios, just "this" will be OK
+                    */
+                    method: "post",
+                    url: "http://localhost:8080/JavaWeb_last/brand/selectByPageWithCondition?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
+                    data:this.brand
+                }).then(resp => {
+                    //data for table
+                    var tempArray = []
+                    for(let i=0;i<resp.data.rowsInPage.length;i++){
+                        if(resp.data.rowsInPage[i].user_name==account){
+                             tempArray.push(resp.data.rowsInPage[i])
+                        }
+                    }
+                    this.tableData = tempArray;
+                    this.totalCount = resp.data.totalCount;
+                })
+
+            },
+
+            //分页
+            handleSizeChange(val) {
+                // console.log(`每页 ${val} 条`);
+
+                //重新设置当每页显示的条数
+                this.pageSize=val;
+                this.queryAll();
+            },
+            handleCurrentChange(val) {
+                // console.log(`当前页: ${val}`);
+
+                //重新设置当前页码
+                this.currentPage=val;
+                this.queryAll();
+
+            },
+
+            /* change the color of every row*/
+            tableRowClassName({row, rowIndex}) {
+                if ((rowIndex - 1) % 4 === 0) {
+                    return 'warning-row';
+                } else if ((rowIndex - 3) % 4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            /*multi selection be selected , do this method*/
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+                /*output the multiple selection see how it is, on browser F12 page*/
+                //console.log(this.multipleSelection)//you can see it is an array []
+            },
+            /*for search form, click submit button, see output on browser F12 page */
+            onSubmit() {
+                // console.log(this.brand);
+                this.queryAll()
+            },
+
+            addBrand() {
+                // console.log(this.brand)
+                // var _this = this
+                this.brand.user_name = account
+                axios({
+                    method: "post",
+                    url: "http://localhost:8080/JavaWeb_last/brand/add",
+                    data: this.brand
+                }).then(resp => {
+                    if (resp.data === "bingo") {
+                        //close dialog box
+                        this.dialogVisible = false
+                        //reload the page
+                        this.queryAll()
+
+                        //msg pop box
+
+                        this.$message({
+                            message: 'Congrats, addition succeed.',
+                            type: 'success'
+                        });
+                    }
+                })
+            },
+
+            startEdit(row) {
+                // 获取改行已经有的数据，以供填入修改框
+                // var _this = this
+
+                this.brandEdition = JSON.parse(JSON.stringify(row));
+                // 弹出修改框
+                this.editDialogVisible = true;
+            },
+            confirmEdit() {
+                // var _this = this
+                //axios transit ajax request
+                axios({
+                    method: "post",
+                    url: "http://localhost:8080/JavaWeb_last/brand/update",
+                    data: this.brandEdition
+                }).then(resp =>  {
+                    if (resp.data === "bingo") {
+                        this.editDialogVisible = false
+                        this.queryAll()
+                        this.$message({
+                            message: 'Congrats, edition succeed.',
+                            type: 'success'
+                        });
+                    }
+                })
+            },
+            cancelEdit() {
+                this.editDialogVisible = false
+                this.queryAll()
+            },
+
+
+            getPaths(row) {
+                this.brand.brandName = row.brandName
+                axios({
+                    method: "get",
+                    url: "http://localhost:8080/JavaWeb_last/brand/getPaths?brandName="+this.brand.brandName,
+                }).then(resp =>{
+                    // window.location.href = resp.data[0]
+
+                    var paths = resp.data
+
+                    var select = "<form><select id='modelPath' onchange='show()'>"
+
+                    for(let i=0;i<paths.length;i++){
+                        select += " <option>"+paths[i]+"</option>"
+                    }
+                    select += "</select></form>" +
+                        "\n" +
+                        "<form action=\"uploadServlet\" method=\"post\" enctype=\"multipart/form-data\">" +
+                        "上传文件：<input type=\"file\" name=\"spicture\"><br><br>\n" +
+                        "<input type=\"submit\" value=\"上传\"><br><br></form>"+
+                        "<script>var userSelect = document.getElementById('modelPath');" +
+                        "var index = userSelect.selectedIndex;" +
+                        "var option = userSelect.options[index].text;" +
+                        "<\/script>" +
+                        "<script>function show(){" +
+                        "index = userSelect.selectedIndex;" +
+                        "option = userSelect.options[index].text;" +
+                        "var model = document.getElementById('changeModel');" +
+                        "model.text=\"viewer.setParameter('SceneUrl',\"+option+\")\";" +
+                        "}<\/script>"
+
+
+                    var content = "<div style='width:420px; margin:auto; position:relative; font-size:9pt; color:#777777;'> " +
+                        "  <canvas id='cv' style='border: 1px solid;' width='420' height='560' ></canvas> " +
+                        "  <div id='tip' style='display:block; color:#ffffff; position:absolute; left:10px; top:508px; background-color:#000000; height:32px; width:250px; border-radius:5px; border:1px solid #777777; opacity:0.5; font:1em/1.4 Cambria,Arial,sans-serif; padding:6px; pointer-events:none;'> " +
+                        "   Drag mouse to rotate <br> Drag mouse with shift pressed to zoom " +
+                        "  </div> " +
+                        "  <p style='font-family:Cambria,Arial,sans-serif;'>The model used here is from the internet. It <b>should not</b> be used for any commercial purpose.<p> " +
+                        " </div>" +
+                        " <script type= 'text/javascript ' src= 'JSC3/js/jsc3d.js '><\/script>"+
+                        " <script type= 'text/javascript ' src= 'JSC3/js/jsc3d.touch.js '><\/script>"+
+                        " <script type= 'text/javascript ' src= 'JSC3/js/jsc3d.webgl.js '><\/script>"+
+                        " <script type= 'text/javascript '>"+
+                        " var canvas = document.getElementById('cv'); " +
+                        " var viewer = new JSC3D.Viewer(canvas);<\/script>"+
+
+                        " <script id='changeModel' type= 'text/javascript '>"+
+                        " viewer.setParameter('SceneUrl',option);<\/script>"+
+
+                        " <script type= 'text/javascript '>"+
+                        " viewer.setParameter('InitRotationX', 0); " +
+                        " viewer.setParameter('InitRotationY', 0); " +
+                        " viewer.setParameter('InitRotationZ', 0); " +
+                        " viewer.setParameter('ModelColor', '#AAAAAA'); " +
+                        " viewer.setParameter('BackgroundColor1', '#333333'); " +
+                        " viewer.setParameter('BackgroundColor2', '#333333'); " +
+                        " viewer.setParameter('RenderMode', 'texturesmooth'); " +
+                        " viewer.setParameter('MipMapping', JSC3D.PlatformInfo.supportWebGL ? 'off' : 'on'); " +
+                        " viewer.setParameter('Renderer', 'webgl'); " +
+                        " viewer.init(); " +
+                        " viewer.update(); <\/script>"
+
+                    let modelWindow = window.open('','','width=640,height=860')
+                    modelWindow.document.write(select)
+                    modelWindow.document.write(content)
+
+
+
+
+                })
+            },
+
+            deleteById(row) {
+                //get data from row
+                this.brand.id = row.id
+                //pop up confirm dialog
+                this.$confirm('此操作将删除该数据, 是否继续?', '提示', {
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                    type: 'warning'
+                }).then(() => {
+                    //when confirm clicked
+                    //axios transit ajax request
+                    axios({
+                        method: "get",
+                        url: "http://localhost:8080/JavaWeb_last/brand/deleteById?id=" + this.brand.id
+                    }).then(resp => {
+                        if (resp.data === "bingo") {
+                            //remove OK
+                            //reload page, but if we reload the page, the success msg has no time display
+                            // location.reload();
+                            this.queryAll();
+                            //pop up OK msg
+                            this.$message({
+                                message: 'Congrats, deletion succeed.',
+                                type: 'success'
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    //when cancel clicked
+                    this.$message({
+                        type: 'info',
+                        message: 'Deletion stop'
+                    });
+                })
+
+            },
+            //delete many brands
+            deleteByIds(){
+                //1.get an int[] include ids from multipleSelection
+                for (let i = 0; i < this.multipleSelection.length; i++) {
+                    let selectedOne = this.multipleSelection[i];
+                    this.selectedIds[i] = selectedOne.id
+                }
+                //2.transit request async by ajax by axios
+                if (this.selectedIds != null && this.selectedIds.length > 0){
+
+                    this.$confirm('此操作将删除多条数据, 是否继续?', '提示', {
+                        confirmButtonText: 'Confirm',
+                        cancelButtonText: 'Cancel',
+                        type: 'warning'
+                    }).then(() => {
+                        //when confirm clicked
+                        //axios transit ajax request
+                        axios({
+                            method: "post",
+                            url: "http://localhost:8080/JavaWeb_last/brand/deleteByIds",
+                            data:this.selectedIds
+                        }).then(resp => {
+                            if (resp.data === "bingo") {
+                                //remove OK
+                                //reload page, but if we reload the page, the success msg has no time display
+                                // location.reload();
+                                this.queryAll();
+                                //pop up OK msg
+                                this.$message({
+                                    message: 'Congrats, multiple deletion succeed.',
+                                    type: 'success'
+                                });
+                            }
+                        })
+                    }).catch(() => {
+                        //when cancel clicked
+                        this.$message({
+                            type: 'info',
+                            message: 'Deletion stop'
+                        });
+                    })
+
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: 'Incorrect operation'
+                    });
+                }
+
+            },
+
+        },
+
+        data() {
+            return {
+                /*for pagination ,here are all initial value*/
+                currentPage: 1,
+                totalCount : 60,
+                pageSize : 10,
+
+                paths: [],
+
+                /*for pop add new dialog form, we put this data model here it disappears smoothly*/
+                dialogVisible: false,
+
+                /*for pop edit brand dialog, we put this data model here it disappears smoothly*/
+                editDialogVisible: false,
+
+                path:[],
+                /*selected by multiple selection box*/
+                selectedIds:[],
+
+                /*for search form data, and for form in dialog*/
+                brand: {
+                    id: '',
+                    brandName: '',
+                    companyName: '',
+                    ordered: '',
+                    description: '',
+                    status: '',
+                    user_name:''
+                },
+
+                brandEdition:{
+                    id: '',
+                    brandName: '',
+                    companyName: '',
+                    ordered: '',
+                    description: '',
+                    status: ''
+                },
+
+                /*for multi selection box */
+                multipleSelection:[],
+
+                tableData:  []
+                /*{
+                    brandName: 'IDEA',
+                    companyName: 'JetBrain',
+                    ordered: 'No. 189',
+                    status: '1'
+                }, {
+                    brandName: 'IDEA',
+                    companyName: 'JetBrain',
+                    ordered: 'No. 189',
+                    status: '1'
+                }, {
+                    brandName: 'IDEA',
+                    companyName: 'JetBrain',
+                    ordered: 'No. 189',
+                    status: '1'
+                }, {
+                    brandName: 'IDEA',
+                    companyName: 'JetBrain',
+                    ordered: 'No. 189',
+                    status: '1'
+                }*/
+
+            }
+        }
+
+    })
+
+</script>
+
+</body>
+</html>

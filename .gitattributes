@@ -1,0 +1,2 @@
+*.scv filter=lfs diff=lfs merge=lfs -text
+Tibia_L.stl filter=lfs diff=lfs merge=lfs -text

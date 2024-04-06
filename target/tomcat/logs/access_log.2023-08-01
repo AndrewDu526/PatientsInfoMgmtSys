@@ -1,0 +1,13 @@
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:02:39 +0800] "GET /JavaWeb_last HTTP/1.1" 302 - http-bio-8080-exec-2 0
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:02:40 +0800] "GET /JavaWeb_last/ HTTP/1.1" 404 977 http-bio-8080-exec-3 16
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:02:40 +0800] "GET /favicon.ico HTTP/1.1" 404 - http-bio-8080-exec-4 0
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:03:03 +0800] "GET /JavaWeb_last/homePage/login.jsp HTTP/1.1" 200 1071 http-bio-8080-exec-6 58
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:03:03 +0800] "GET /JavaWeb_last/homePage/css/login.css HTTP/1.1" 200 1937 http-bio-8080-exec-8 5
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:04:07 +0800] "POST /JavaWeb_last/loginServlet HTTP/1.1" 302 - http-bio-8080-exec-10 1014
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:04:07 +0800] "GET /JavaWeb_last/brand.html HTTP/1.1" 304 - http-bio-8080-exec-3 3
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:04:08 +0800] "POST /JavaWeb_last/brand/selectByPageWithCondition?currentPage=1&pageSize=10 HTTP/1.1" 200 620 http-bio-8080-exec-3 228
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:05:28 +0800] "POST /JavaWeb_last/brand/update HTTP/1.1" 200 5 http-bio-8080-exec-1 20
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:05:28 +0800] "POST /JavaWeb_last/brand/selectByPageWithCondition?currentPage=1&pageSize=10 HTTP/1.1" 200 639 http-bio-8080-exec-1 10
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:06:09 +0800] "GET /JavaWeb_last/brand/deleteById?id=56 HTTP/1.1" 200 5 http-bio-8080-exec-1 46
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:06:09 +0800] "POST /JavaWeb_last/brand/selectByPageWithCondition?currentPage=1&pageSize=10 HTTP/1.1" 200 494 http-bio-8080-exec-1 12
+0:0:0:0:0:0:0:1 - - [01/Aug/2023:17:06:24 +0800] "GET /JavaWeb_last/brand/getPaths?brandName=222 HTTP/1.1" 200 17 http-bio-8080-exec-1 16
