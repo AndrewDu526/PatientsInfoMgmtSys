@@ -35,6 +35,14 @@ User can view the 3D models of bones, and rotating and zooming later for details
 
 <img width="960" alt="models" src="https://github.com/AndrewDu526/ChanganPersonalProject/assets/137496018/8252a5ab-0b14-4e4a-8e47-398552145513">
 
+How to run:
+download the project, run it by tomcay7 under maven, in IDEA platform 
+
+<img width="166" alt="image" src="https://github.com/AndrewDu526/PatientsInfoMgmtSys/assets/137496018/e58686b8-bcaf-4c66-af21-bc668e95cc21">
+
+login: http://localhost:8080/JavaWeb_last/homePage/login.jsp
+sign up: http://localhost:8080/JavaWeb_last/homePage/register.jsp
+
 Existing drawbacks:
 1. cannot upload or delete 3d models by website, instead only works by directly managing database
 2. cannot contains and show a list of 3d models under one patient, can only show one model
